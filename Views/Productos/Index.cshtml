@@ -1,0 +1,196 @@
+﻿@model Examen_jose_lira.DTOs.ProductosViewModel
+
+@{
+    ViewData["Title"] = "Productos";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-4">Productos</h1>
+        <a href="#" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#ModalProductos">
+            <i class="fas fa-user-plus"></i> Registrar Nuevo Producto
+        </a>
+    </div>
+
+    <div class="table-responsive shadow rounded">
+        <table class="table table-striped table-hover table-bordered mb-0">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Marca</th>
+                    <th>Costo</th>
+                    <th>Precio de Venta</th>
+                    <th class="text-center" style="width: 120px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var producto in Model.ListaProductos)
+                {
+                    <tr>
+                        <td>@producto.Nombre</td>
+                        <td>@producto.Marca</td>
+                        <td>$@producto.Costo</td>
+                        <td>$@producto.PrecioVenta</td>
+                        <td class="text-center">
+                            <a href="#"
+                               class="btn btn-sm btn-warning btn-edit"
+                               data-id="@producto.Id"
+                               data-nombre="@producto.Nombre"
+                               data-marca="@producto.Marca"
+                               data-costo="@producto.Costo"
+                               data-precioventa="@producto.PrecioVenta">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal Registrar / Actualizar Cliente -->
+    <div class="modal fade" id="ModalProductos" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content shadow-lg border-0">
+                <!-- Header -->
+                <div class="modal-header text-white" style="background-color: #2D3250;">
+                    <h5 class="modal-title"><strong>Cliente</strong></h5>
+                    <button type="button" class="btn" data-bs-dismiss="modal" style="background-color: #2D3250; border: none;">
+                        <i class="bi bi-x-circle" style="color: white; font-size: 1.5rem;"></i>
+                    </button>
+                </div>
+
+                <!-- Formulario MVC -->
+                <form asp-action="Guardar" asp-controller="Productos" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Campo oculto para el ID -->
+                    <input type="hidden" asp-for="NuevoProducto.Id" id="ProductoId" />
+
+                    <div class="modal-body" style="background-color: #E9E9E9;">
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <label asp-for="NuevoProducto.Nombre" class="form-label">
+                                    <strong>Nombre del Producto</strong>
+                                </label>
+                                <input asp-for="NuevoProducto.Nombre" class="form-control" id="NuevoProducto_Nombre" style="background-color: #B3B3B3; color:white;" />
+                                <span asp-validation-for="NuevoProducto.Nombre" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-6">
+                                <label asp-for="NuevoProducto.Marca" class="form-label">
+                                    <strong>Marca del producto</strong>
+                                </label>
+                                <input asp-for="NuevoProducto.Marca" class="form-control" id="NuevoProducto_Marca" style="background-color: #B3B3B3; color:white;" />
+                                <span asp-validation-for="NuevoProducto.Marca" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-6">
+                                <label asp-for="NuevoProducto.Costo" class="form-label">
+                                    <strong>Costo del producto</strong>
+                                </label>
+                                <input asp-for="NuevoProducto.Costo" class="form-control" id="NuevoProducto_Costo" style="background-color: #B3B3B3; color:white;" />
+                                <span asp-validation-for="NuevoProducto.Costo" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-6">
+                                <label asp-for="NuevoProducto.Marca" class="form-label">
+                                    <strong>Precio de venta del producto</strong>
+                                </label>
+                                <input asp-for="NuevoProducto.PrecioVenta" class="form-control" id="NuevoProducto_PrecioVenta" style="background-color: #B3B3B3; color:white;" />
+                                <span asp-validation-for="NuevoProducto.PrecioVenta" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" style="background-color: #E9E9E9;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Modal para Mensajes -->
+    <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" id="messageModalHeader">
+                    <h5 class="modal-title" id="messageModalTitle"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="messageModalBody">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        $(document).ready(function() {
+            // Mostrar modal de éxito/error.
+            const successMessage = '@(TempData["SuccessMessage"] ?? "")';
+            const errorMessage = '@(TempData["ErrorMessage"] ?? "")';
+
+            if (successMessage)
+            {
+                showMessageModal('Éxito', successMessage, 'success');
+            }
+            else if (errorMessage)
+            {
+                showMessageModal('Error', errorMessage, 'danger');
+            }
+
+            function showMessageModal(title, message, type) {
+                $('#messageModalTitle').text(title);
+                $('#messageModalBody').text(message);
+
+                // Cambiar colores según el tipo.
+                const header = $('#messageModalHeader');
+                header.removeClass('bg-success bg-danger bg-warning');
+
+                if (type === 'success')
+                {
+                    header.addClass('bg-success text-white');
+                }
+                else if (type === 'danger')
+                {
+                    header.addClass('bg-danger text-white');
+                }
+                else
+                {
+                    header.addClass('bg-warning text-dark');
+                }
+
+                $('#messageModal').modal('show');
+            }
+
+            // Evento para botones de editar.
+            $(document).on('click', '.btn-edit', function(e) {
+                e.preventDefault();
+
+                const id = $(this).data('id');
+                const nombre = $(this).data('nombre');
+                const marca = $(this).data('marca');
+                const costo = $(this).data('costo');
+                const precioventa = $(this).data('precioventa');
+                console.log(nombre);
+
+                $('#ProductoId').val(id);
+                $('#NuevoProducto_Nombre').val(nombre);
+                $('#NuevoProducto_Marca').val(marca);
+                $('#NuevoProducto_Costo').val(costo);
+                $('#NuevoProducto_PrecioVenta').val(precioventa);
+                $('#ModalProductos').modal('show');
+            });
+        });
+    </script>
+}
